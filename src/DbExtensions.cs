@@ -19,9 +19,9 @@ namespace LinqToDB.Repository
 
         #region CREATE
         public static async Task<object> InsertAsync<T>(this IDbRepository<T> repository, T entity, 
-            bool skipNullValue = true, CancellationToken cancellation = default) where T : class
+            bool ignoreNullValue = false, CancellationToken cancellation = default) where T : class
         {
-            if (skipNullValue)
+            if (ignoreNullValue)
             {
                 var validCols = GetNotNullColumns(entity);
 
@@ -44,9 +44,9 @@ namespace LinqToDB.Repository
         }
 
         public static object? Insert<T>(this IDbRepository<T> repository, T entity,
-            bool skipNullValue = true) where T : class
+            bool ignoreNullValue = false) where T : class
         {
-            if (skipNullValue)
+            if (ignoreNullValue)
             {
                 var validCols = GetNotNullColumns(entity);
 
@@ -130,13 +130,61 @@ namespace LinqToDB.Repository
         {
             return repository.BuildQuery(criteria).FirstOrDefault();
         }
+
+        public static async Task<object?> MaxAsync<T>(this IDbRepository<T> repository,
+            Func<IQueryable<T>, IQueryable<T>>? criteria, CancellationToken cancellation = default) where T : class
+        {
+            return await repository.BuildQuery(criteria).MaxAsync(cancellation);
+        }
+
+        public static object? Max<T>(this IDbRepository<T> repository,
+            Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
+        {
+            return repository.BuildQuery(criteria).Max();
+        }
+
+        public static async Task<object?> MaxAsync<T>(this IDbRepository<T> repository, 
+            Expression<Func<T, bool>>? criteria = null, CancellationToken cancellation = default) where T : class
+        {
+            return await repository.BuildQuery(criteria).MaxAsync(cancellation);
+        }
+
+        public static object? Max<T>(this IDbRepository<T> repository,
+            Expression<Func<T, bool>>? criteria) where T : class
+        {
+            return repository.BuildQuery(criteria).Max();
+        }
+
+        public static async Task<int> RowCountAsync<T>(this IDbRepository<T> repository,
+            Func<IQueryable<T>, IQueryable<T>>? criteria, CancellationToken cancellation = default) where T : class
+        {
+            return await repository.BuildQuery(criteria).CountAsync(cancellation);
+        }
+
+        public static object? RowCount<T>(this IDbRepository<T> repository,
+            Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
+        {
+            return repository.BuildQuery(criteria).Count();
+        }
+
+        public static async Task<object?> RowCountAsync<T>(this IDbRepository<T> repository,
+            Expression<Func<T, bool>>? criteria = null, CancellationToken cancellation = default) where T : class
+        {
+            return await repository.BuildQuery(criteria).CountAsync(cancellation);
+        }
+
+        public static object? RowCount<T>(this IDbRepository<T> repository,
+            Expression<Func<T, bool>>? criteria) where T : class
+        {
+            return repository.BuildQuery(criteria).Count();
+        }
         #endregion
 
         #region UPDATE
         public static async Task<int> UpdateAsync<T>(this IDbRepository<T> repository, T entity,
-            bool skipNullValue = true, CancellationToken cancellation = default) where T : class
+            bool ignoreNullValue = false, CancellationToken cancellation = default) where T : class
         {
-            if (skipNullValue)
+            if (ignoreNullValue)
             {
                 var validCols = GetNotNullColumns(entity);
                 return await repository.Table.DataContext.UpdateAsync(entity, (a, b) => validCols.Contains(b.ColumnName),
@@ -148,9 +196,9 @@ namespace LinqToDB.Repository
         }
 
         public static int Update<T>(this IDbRepository<T> repository, T entity,
-           bool skipNullValue = true) where T : class
+           bool ignoreNullValue = false) where T : class
         {
-            if (skipNullValue)
+            if (ignoreNullValue)
             {
                 var validCols = GetNotNullColumns(entity);
                 return repository.Table.DataContext.Update(entity, (a, b) => validCols.Contains(b.ColumnName),
@@ -182,7 +230,7 @@ namespace LinqToDB.Repository
         #endregion
 
         #region QUERY BUILDER
-        private static IQueryable<T> BuildQuery<T>(this IDbRepository<T> repository,
+        public static IQueryable<T> BuildQuery<T>(this IDbRepository<T> repository,
             Expression<Func<T, bool>>? criteria = null) where T : class
         {
             var q = repository.Table.AsQueryable();
@@ -193,7 +241,7 @@ namespace LinqToDB.Repository
             return q;
         }
 
-        private static IQueryable<T> BuildQuery<T>(this IDbRepository<T> repository,
+        public static IQueryable<T> BuildQuery<T>(this IDbRepository<T> repository,
             Func<IQueryable<T>, IQueryable<T>>? criteria = null) where T : class
         {
             var q = repository.Table.AsQueryable();
@@ -203,7 +251,7 @@ namespace LinqToDB.Repository
             return q;
         }
 
-        private static IQueryable<T> Paging<T>(this IQueryable<T> query,
+        public static IQueryable<T> Paging<T>(this IQueryable<T> query,
             int page, int recordToShow) where T : class
         {
             query = query.Skip((page - 1) * recordToShow).Take(recordToShow);
@@ -256,6 +304,13 @@ namespace LinqToDB.Repository
             }
 
             return result;
+        }
+        #endregion
+
+        #region DB CONTEXT
+        public static IDbRepository<T> GetTable<T>(this IDbContextRepository context) where T : class
+        {
+            return new DbRepository<T>(context);
         }
         #endregion
     }
