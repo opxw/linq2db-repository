@@ -12,5 +12,6 @@
         }
 
         public ITable<T> Table => _table;
+        public IDbContextRepository DbContext => _dbContext;
     }
 }

@@ -1,24 +1,16 @@
-﻿using LinqToDB.Mapping;
+﻿
+using LinqToDB.Data;
+using LinqToDB.Mapping;
 using LinqToDB.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;
 
 namespace LinqToDB.Repository
 {
-    public static class DbExtensions
+    public static class DbCrud
     {
-        #region DEPENDENCY INJECTION
-        public static void UseRepositoryPattern(this IServiceCollection services,
-            string providerName, string connectionString)
-        {
-            services.AddScoped<IDbContextRepository, DbContextRepository>(connection =>
-                new DbContextRepository(providerName, connectionString));
-            services.AddScoped(typeof(IDbRepository<>), typeof(DbRepository<>));
-        }
-        #endregion
-
         #region CREATE
-        public static async Task<object> InsertAsync<T>(this IDbRepository<T> repository, T entity, 
+        public static async Task<object> InsertAsync<T>(this IDbRepository<T> repository, T entity,
             bool ignoreNullValue = false, CancellationToken cancellation = default) where T : class
         {
             if (ignoreNullValue)
@@ -29,7 +21,7 @@ namespace LinqToDB.Repository
                     return await repository.Table.DataContext.InsertWithIdentityAsync(entity, (a, b) => validCols.Contains(b.ColumnName),
                         null, null, null, null, TableOptions.NotSet, cancellation);
                 else
-                    return await repository.Table.DataContext.InsertAsync(entity, (a, b) => validCols.Contains(b.ColumnName), 
+                    return await repository.Table.DataContext.InsertAsync(entity, (a, b) => validCols.Contains(b.ColumnName),
                         null, null, null, null, TableOptions.NotSet, cancellation);
             }
             else
@@ -131,50 +123,54 @@ namespace LinqToDB.Repository
             return repository.BuildQuery(criteria).FirstOrDefault();
         }
 
-        public static async Task<object?> MaxAsync<T>(this IDbRepository<T> repository,
-            Func<IQueryable<T>, IQueryable<T>>? criteria, CancellationToken cancellation = default) where T : class
+        public static async Task<object?> MaxAsync<T, TResult>(this IDbRepository<T> repository,
+            Expression<Func<T, TResult>> selector, Func<IQueryable<T>, IQueryable<T>>? criteria,
+            CancellationToken cancellation = default) where T : class
         {
-            return await repository.BuildQuery(criteria).MaxAsync(cancellation);
+            return await repository.BuildQuery(criteria).MaxAsync(selector, cancellation);
         }
 
-        public static object? Max<T>(this IDbRepository<T> repository,
-            Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
+        public static async Task<object?> MaxAsync<T, TResult>(this IDbRepository<T> repository,
+            Expression<Func<T, TResult>> selector, Expression<Func<T, bool>>? criteria = null,
+            CancellationToken cancellation = default) where T : class
         {
-            return repository.BuildQuery(criteria).Max();
+            return await repository.BuildQuery(criteria).MaxAsync(selector, cancellation);
         }
 
-        public static async Task<object?> MaxAsync<T>(this IDbRepository<T> repository, 
-            Expression<Func<T, bool>>? criteria = null, CancellationToken cancellation = default) where T : class
+        public static object? Max<T, TResult>(this IDbRepository<T> repository,
+            Expression<Func<T, TResult>> selector, Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
         {
-            return await repository.BuildQuery(criteria).MaxAsync(cancellation);
+            return repository.BuildQuery(criteria).Max(selector);
         }
 
-        public static object? Max<T>(this IDbRepository<T> repository,
-            Expression<Func<T, bool>>? criteria) where T : class
+        public static object? Max<T, TResult>(this IDbRepository<T> repository,
+            Expression<Func<T, TResult>> selector, Expression<Func<T, bool>>? criteria = null) where T : class
         {
-            return repository.BuildQuery(criteria).Max();
+            return repository.BuildQuery(criteria).Max(selector);
         }
 
         public static async Task<int> RowCountAsync<T>(this IDbRepository<T> repository,
-            Func<IQueryable<T>, IQueryable<T>>? criteria, CancellationToken cancellation = default) where T : class
+            Func<IQueryable<T>, IQueryable<T>>? criteria,
+            CancellationToken cancellation = default) where T : class
         {
             return await repository.BuildQuery(criteria).CountAsync(cancellation);
         }
 
-        public static object? RowCount<T>(this IDbRepository<T> repository,
+        public static async Task<int> RowCountAsync<T>(this IDbRepository<T> repository,
+            Expression<Func<T, bool>>? criteria = null,
+            CancellationToken cancellation = default) where T : class
+        {
+            return await repository.BuildQuery(criteria).CountAsync(cancellation);
+        }
+
+        public static int RowCount<T>(this IDbRepository<T> repository,
             Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
         {
             return repository.BuildQuery(criteria).Count();
         }
 
-        public static async Task<object?> RowCountAsync<T>(this IDbRepository<T> repository,
-            Expression<Func<T, bool>>? criteria = null, CancellationToken cancellation = default) where T : class
-        {
-            return await repository.BuildQuery(criteria).CountAsync(cancellation);
-        }
-
-        public static object? RowCount<T>(this IDbRepository<T> repository,
-            Expression<Func<T, bool>>? criteria) where T : class
+        public static int RowCount<T>(this IDbRepository<T> repository,
+            Expression<Func<T, bool>>? criteria = null) where T : class
         {
             return repository.BuildQuery(criteria).Count();
         }
@@ -211,7 +207,7 @@ namespace LinqToDB.Repository
         #endregion
 
         #region DELETE
-        public static async Task<int> DeleteAsync<T>(this IDbRepository<T> repository, Expression<Func<T, bool>>? criteria, 
+        public static async Task<int> DeleteAsync<T>(this IDbRepository<T> repository, Expression<Func<T, bool>>? criteria,
             CancellationToken cancellation = default) where T : class
         {
             if (criteria == null)
@@ -229,7 +225,41 @@ namespace LinqToDB.Repository
         }
         #endregion
 
-        #region QUERY BUILDER
+        #region MISC
+        private static string GetNewId(object? value, string prefix, int padCount)
+        {
+            var intValue = 0;
+
+            if (value != null)
+            {
+                var temp = value.ToString();
+                intValue = Convert.ToInt32(temp.Substring(prefix.Length, temp.Length - prefix.Length));
+            }
+
+            return $"{prefix}{(intValue + 1).ToString().PadLeft(padCount, '0')}";
+        }
+
+        public static async Task<string> GenerateIdAsync<T>(this IDbRepository<T> repository,
+            Expression<Func<T, string>> selector, string prefix, int padCount,
+            CancellationToken cancellation = default) where T : class
+        {
+            var filter = Utils.ModifyStringExpression(selector, LinqFilter.StartsWith, prefix);
+            var maxValue = await repository.MaxAsync(selector, filter, cancellation);
+
+            return GetNewId(maxValue, prefix, padCount);
+        }
+
+        public static string GenerateId<T>(this IDbRepository<T> repository,
+            Expression<Func<T, string>> selector, string prefix, int padCount) where T : class
+        {
+            var filter = Utils.ModifyStringExpression(selector, LinqFilter.StartsWith, prefix);
+            var maxValue = repository.Max(selector, filter);
+
+            return GetNewId(maxValue, prefix, padCount);
+        }
+        #endregion
+
+        #region QUERY HELPER
         public static IQueryable<T> BuildQuery<T>(this IDbRepository<T> repository,
             Expression<Func<T, bool>>? criteria = null) where T : class
         {
@@ -300,18 +330,35 @@ namespace LinqToDB.Repository
                 {
                     result = true;
                     break;
-                }    
+                }
             }
 
             return result;
         }
         #endregion
 
-        #region DB CONTEXT
-        public static IDbRepository<T> GetTable<T>(this IDbContextRepository context) where T : class
+        #region CONNECTION
+        public static void UseRepositoryPattern(this IServiceCollection services,
+           string providerName, string connectionString)
+        {
+            services.AddScoped<IDbContextRepository, DbContextRepository>(connection =>
+                new DbContextRepository(providerName, connectionString));
+            services.AddScoped(typeof(IDbRepository<>), typeof(DbRepository<>));
+        }
+
+        public static void UseRepositoryPattern(this IServiceCollection services,
+            DataConnection dataConnection)
+        {
+            services.AddScoped<IDbContextRepository, DbContextRepository>(connection =>
+                new DbContextRepository(dataConnection));
+            services.AddScoped(typeof(IDbRepository<>), typeof(DbRepository<>));
+        }
+
+        public static IDbRepository<T> Repository<T>(this IDbContextRepository context) where T : class
         {
             return new DbRepository<T>(context);
         }
         #endregion
+
     }
 }

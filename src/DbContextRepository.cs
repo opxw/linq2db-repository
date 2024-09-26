@@ -12,6 +12,11 @@ namespace LinqToDB.Repository
             _connection = new DataConnection(providerName, connectionString);
         }
 
+        public DbContextRepository(DataConnection dataConnection)
+        {
+            _connection = dataConnection;
+        }
+
         public DataConnection Connection => _connection;
 
         protected virtual void Dispose(bool disposing)
