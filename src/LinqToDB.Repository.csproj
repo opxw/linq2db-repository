@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>Noviyanto Wibowo</Authors>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>{AssemblyVersion}</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
