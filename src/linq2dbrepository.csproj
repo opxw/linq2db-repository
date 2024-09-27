@@ -5,9 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>Noviyanto Wibowo</Authors>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <FileVersion>{AssemblyVersion}</FileVersion>
     <RootNamespace>LinqToDb.Repository</RootNamespace>
+    <RepositoryUrl>https://github.com/opxw/linq2db-repository</RepositoryUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

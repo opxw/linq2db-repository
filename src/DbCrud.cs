@@ -100,25 +100,25 @@ namespace LinqToDB.Repository
         }
 
         public static async Task<T?> FindFirstAsync<T>(this IDbRepository<T> repository,
-            Expression<Func<T, bool>>? criteria = null, CancellationToken cancellation = default) where T : class
+            Expression<Func<T, bool>> criteria, CancellationToken cancellation = default) where T : class
         {
             return await repository.BuildQuery(criteria).FirstOrDefaultAsync(cancellation);
         }
 
         public static async Task<T?> FindFirstAsync<T>(this IDbRepository<T> repository,
-            Func<IQueryable<T>, IQueryable<T>>? criteria, CancellationToken cancellation = default) where T : class
+            Func<IQueryable<T>, IQueryable<T>> criteria, CancellationToken cancellation = default) where T : class
         {
             return await repository.BuildQuery(criteria).FirstOrDefaultAsync(cancellation);
         }
 
         public static T? FindFirst<T>(this IDbRepository<T> repository,
-            Expression<Func<T, bool>>? criteria = null) where T : class
+            Expression<Func<T, bool>> criteria) where T : class
         {
             return repository.BuildQuery(criteria).FirstOrDefault();
         }
 
         public static T? FindFirst<T>(this IDbRepository<T> repository,
-            Func<IQueryable<T>, IQueryable<T>>? criteria) where T : class
+            Func<IQueryable<T>, IQueryable<T>> criteria) where T : class
         {
             return repository.BuildQuery(criteria).FirstOrDefault();
         }
