@@ -19,73 +19,61 @@ services.AddScoped(typeof(IDbRepository<>), typeof(DbRepository<>));
 ```
 
 ## Defining Entity
-
 ```c#
-public class Customer
+public class Artist
 {
-    [Identity, PrimaryKey]
-    public int? CustomerId { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public string? Company { get; set; }
-    public string? Address { get; set; }
-    public string? City { get; set; }
-    public string? State { get; set; }
-    public string? Country { get; set; }
-    public string? PostalCode { get; set; }
-    public string? Phone { get; set; }
-    public string? Fax { get; set; }
-    public string? Email { get; set; }
-    public bool? Active { get; set;}
+    [PrimaryKey, Identity]
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string? Notes { get; set; }
 }
 
-public class Invoice
+public class Album
 {
-    [PrimaryKey]
-    public string InvoiceId { get; set; }
-    public int CustomerId { get; set; }
-    public DateTime InvoiceDate { get; set; }
-    public string BillingAddress { get; set; }
-    public string BillingCity { get; set; }
-    public string BillingCountry { get; set; }
-    public double Total { get; set; }
+    [PrimaryKey, Identity]
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
 ```
-
 For more information about defining attribute, you can visit [linq2db](https://github.com/linq2db/linq2db) documentation page.
 
 ## Usage
 
-Put on constructor 
+Put on constructor of your class
 
 ```c#
-private readonly IDbContextRepository _dbContext;
-private readonly IDbRepository<Customer> _customerRepo;
-
-public ValuesController(
-    IDbContextRepository dbContext,
-    IDbRepository<Customer> customerRepo
+public class CatalogService
 {
-    _dbContext = dbContext;
-    _customerRepo = customerRepo;
+	private readonly IDbContextRepository _dbContext;
+	private readonly IDbRepository<Artist> _artistRepo;
+	private readonly IDbRepository<Album> _albumRepo;
+
+	public CatalogService(IDbContextRepository dbContext,
+		IDbRepository<Artist> artistRepo,
+		IDbRepository<Album> albumRepo)
+	{
+		_dbContext = dbContext;
+		_artistRepo = artistRepo;
+		_albumRepo = albumRepo;
+	}
 }
 ```
-
-or direct access to the entity
+or
 
 ```c#
-private readonly IDbContextRepository _dbContext;
-
-public ValuesController(
-    IDbContextRepository dbContext
+public class CatalogService
 {
-    _dbContext = dbContext;
-}
+	private readonly IDbContextRepository _dbContext;
 
-public async Task<Customer> GetCustomer()
-{
-    var customerRepo = _dbContext.Repository<Customer>();
-    .......
+	public CatalogService(IDbContextRepository dbContext)
+	{
+		_dbContext = dbContext;
+	}
+
+	private void SomeMethod()
+	{
+		var artistRepo = _dbContext.Repository<Artist>();
+	}
 }
 ```
 
