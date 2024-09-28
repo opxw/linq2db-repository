@@ -213,7 +213,7 @@ var customer =  _customerRepo.FindFirst(x => x.Active == 1 && x.Id == 123);
 //for complex condition use this
 var customer = _customerRepo.FindFirst(q =>
 {
-    q = q.Where(x => x)
+    q = q.Where(x => x.Prop)
     ....
     ....
     return q;
@@ -223,34 +223,38 @@ var customer = _customerRepo.FindFirst(q =>
 Paging functionality.<br>
 `IEnumerable<T> PageFind<T>(this IDbRepository<T> repository, int page, int recordPerPage, Func<IQueryable<T>, IQueryable<T>>? criteria = null);`
 
+example :
 ```c#
-var customers = _customerRepo.PageFind(1, 10, q =>
+public IEnumerable<Customer> GetPagedCustomers(int page, int show, string? sortField, string? sortDirection)
 {
-    Expression<Func<Customer, object>> selector = s => s.Id;
-
-    if (!string.IsNullOrWhiteSpace(sortField))
+    return _customerRepo.PageFind(1, 10, q =>
     {
-        switch (sortField)
+        Expression<Func<Customer, object>> selector = s => s.Id;
+
+        if (!string.IsNullOrWhiteSpace(sortField))
         {
-            case "lastName":
-                selector = s => s.LastName;
-                break;
-            case "address":
-                selector = s => s.Address;
-                break;
-            default:
-                selector = s => s.FirstName;
-                break;
+            switch (sortField)
+            {
+                case "lastName":
+                    selector = s => s.LastName;
+                    break;
+                case "address":
+                    selector = s => s.Address;
+                    break;
+                default:
+                    selector = s => s.FirstName;
+                    break;
+            }
         }
-    }
 
-    if (sortDirection == "desc")
-        q = q.OrderByDescending(selector);
-    else
-        q = q.OrderBy(selector);
+        if (sortDirection == "desc")
+            q = q.OrderByDescending(selector);
+        else
+            q = q.OrderBy(selector);
 
-    return q;
-});
+        return q;
+    });
+}
 ```
 
 ## 6. UPDATE
@@ -278,7 +282,7 @@ WHERE
 -------------------------------------------*/
 ```
 
-But sometimes we need to update value partially, just set `ignoreNullValue = true`:
+But sometimes we need to update the column partially, just set `ignoreNullValue = true`:
 
 ```c#
 var artist = new Artist() { Id = 1, Notes = "brown fox jumps" };
