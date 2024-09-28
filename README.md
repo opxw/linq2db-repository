@@ -220,7 +220,7 @@ var customer = _customerRepo.FindFirst(q =>
 });
 ```
 ### 5.C `PageFind`
-Paging functionality.
+Paging functionality.<br>
 `IEnumerable<T> PageFind<T>(this IDbRepository<T> repository, int page, int recordPerPage, Func<IQueryable<T>, IQueryable<T>>? criteria = null);`
 
 ```c#
