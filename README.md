@@ -1,6 +1,8 @@
 # linq2db-repository
 
-Generic repository pattern using [linq2db](https://github.com/linq2db/linq2db) with CRUD functionality.
+[![NuGet version (SAPB1.DIAPI.Helper)](https://img.shields.io/nuget/v/DbRepository.LinqToDb.svg?style=flat-square)](https://www.nuget.org/packages/DbRepository.LinqToDb/)
+
+Generic repository pattern using [linq2db](https://github.com/linq2db/linq2db).
 
 ## 1. Defining Database Connection
 
@@ -34,7 +36,7 @@ public class Album
     [PrimaryKey, Identity]
     public int Id { get; set; }
     public string Name { get; set; }
-    public string? Composer { get; set; }
+    public int? ArtistId { get; set; }
 }
 
 public class Customer
@@ -258,23 +260,41 @@ var customers = _customerRepo.PageFind(1, 10, q =>
 > It will returning `affected rows`.
 
 ```c#
- var album = _albumRepo.FindFirst(x => x.Id == 11);
-album.Composer = "JS Bach";
+var artist = _artistRepo.FindFirst(x => x.Id == 1);
+artist.Notes = "brown fox jumps";
 
- _albumRepo.Update(album);
+ _artistRepo.Update(artist);
+
+/*------------------------------------------
+UPDATE
+	[t1]
+SET
+	[t1].[Name] = @Name,
+	[t1].[Notes] = @Notes
+FROM
+	[Artist] [t1]
+WHERE
+	[t1].[Id] = @Id
+-------------------------------------------*/
 ```
 
 But sometimes we need to update value partially, just set `ignoreNullValue = true`:
 
 ```c#
-var album = new Album()
-{
-    Id = 11,
-    Composer = "J.S. Bach"
-};
+var artist = new Artist() { Id = 1, Notes = "brown fox jumps" };
 
-// only 'Composer' field will be updated 
-_albumRepo.Update(album, true);
+_artistRepo.Update(artist, true);
+
+/*------------------------------------------
+UPDATE
+	[t1]
+SET
+	[t1].[Notes] = @Notes
+FROM
+	[Artist] [t1]
+WHERE
+	[t1].[Id] = @Id
+-------------------------------------------*/
 ```
 
 ## 7. DELETE
