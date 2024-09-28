@@ -7,8 +7,23 @@
     <Authors>Noviyanto Wibowo</Authors>
     <RootNamespace>LinqToDb.Repository</RootNamespace>
     <RepositoryUrl>https://github.com/opxw/linq2db-repository</RepositoryUrl>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
+    <Description>Generic repository pattern using linq2db</Description>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageReadmeFile>docs.md</PackageReadmeFile>
+    <Title>Generic Repository LinqToDb</Title>
   </PropertyGroup>
+
+	<ItemGroup>
+    <None Include="..\docs.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="linq2db" Version="5.4.1" />
