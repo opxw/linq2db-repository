@@ -1,5 +1,7 @@
 # linq2db-repository
 
+[![NuGet version (SAPB1.DIAPI.Helper)](https://img.shields.io/nuget/v/DbRepository.LinqToDb.svg?style=flat-square)](https://www.nuget.org/packages/DbRepository.LinqToDb/)
+
 Generic repository pattern using [linq2db](https://github.com/linq2db/linq2db).
 
 ## 1. Defining Database Connection
