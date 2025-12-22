@@ -1,4 +1,5 @@
 ﻿
+using LinqToDB.Async;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 using LinqToDB.Reflection;
@@ -174,10 +175,10 @@ namespace LinqToDB.Repository
         {
             return repository.BuildQuery(criteria).Count();
         }
-        #endregion
+		#endregion
 
-        #region UPDATE
-        public static async Task<int> UpdateAsync<T>(this IDbRepository<T> repository, T entity,
+		#region UPDATE
+		public static async Task<int> UpdateAsync<T>(this IDbRepository<T> repository, T entity,
             bool ignoreNullValue = false, CancellationToken cancellation = default) where T : class
         {
             if (ignoreNullValue)
