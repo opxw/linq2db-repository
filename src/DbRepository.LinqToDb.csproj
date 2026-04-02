@@ -7,7 +7,7 @@
     <Authors>Noviyanto Wibowo</Authors>
     <RootNamespace>LinqToDb.Repository</RootNamespace>
     <RepositoryUrl>https://github.com/opxw/linq2db-repository</RepositoryUrl>
-    <Version>1.0.6</Version>
+    <Version>1.0.9</Version>
     <Description>Generic repository pattern using linq2db</Description>
     <PackageIcon>logo.png</PackageIcon>
     <PackageReadmeFile>docs.md</PackageReadmeFile>
@@ -34,8 +34,8 @@
   </ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="linq2db" Version="6.1.0" />
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+	  <PackageReference Include="linq2db" Version="6.2.1" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 	</ItemGroup>
 
 </Project>
